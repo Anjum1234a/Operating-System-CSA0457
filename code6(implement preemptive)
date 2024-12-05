@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_PROCESSES 100
+typedef struct {
+    int pid;         
+    int arrival_time; 
+    int burst_time;   
+    int priority;     
+    int remaining_time;
+    int completion_time; 
+    int turnaround_time; 
+    int waiting_time;   
+} Process;
+void calculateTimes(Process processes[], int n) {
+    int current_time = 0;
+    int completed = 0;
+    bool is_completed[MAX_PROCESSES] = {false};
+    while (completed != n) 
+        int idx = -1;
+        int highest_priority = 1000; 
+        
+        for (int i = 0; i < n; i++) {
+            if (processes[i].arrival_time <= current_time && 
+                !is_completed[i] &&
+                processes[i].priority < highest_priority) {
+                highest_priority = processes[i].priority;
+                idx = i;
+            }
+        }
+
+        if (idx != -1) {
+            processes[idx].remaining_time--;
+            current_time++;
+            if (processes[idx].remaining_time == 0) {
+                is_completed[idx] = true;
+                completed++;
+                processes[idx].completion_time = current_time;
+                processes[idx].turnaround_time = processes[idx].completion_time - processes[idx].arrival_time;
+                processes[idx].waiting_time = processes[idx].turnaround_time - processes[idx].burst_time;
+            }
+        } else 
+            current_time++;
+        }
+    }
+}
+void printTable(Process processes[], int n) {
+    printf("\nPID\tAT\tBT\tP\tCT\tTAT\tWT\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\n", processes[i].pid, 
+               processes[i].arrival_time, 
+               processes[i].burst_time, 
+               processes[i].priority, 
+               processes[i].completion_time, 
+               processes[i].turnaround_time, 
+               processes[i].waiting_time);
+    }
+}
+int main() {
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    Process processes[MAX_PROCESSES];
+    for (int i = 0; i < n; i++) {
+        processes[i].pid = i + 1;
+        printf("Enter arrival time, burst time, and priority for process %d: ", processes[i].pid);
+        scanf("%d %d %d", &processes[i].arrival_time, 
+              &processes[i].burst_time, 
+              &processes[i].priority);
+
+        processes[i].remaining_time = processes[i].burst_time; // Initialize remaining time
+    }
+    calculateTimes(processes, n);
+    printTable(processes, n);
+
+    return 0;
+}
