@@ -1,0 +1,56 @@
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_USERS 5
+#define MAX_FILES 5
+
+typedef struct {
+    char name[20];
+} File;
+
+typedef struct {
+    char username[20];
+    File files[MAX_FILES];
+    int fileCount;
+} Directory;
+
+Directory directories[MAX_USERS];
+int userCount = 0;
+
+void createUser(char* username) {
+    strcpy(directories[userCount].username, username);
+    directories[userCount].fileCount = 0;
+    userCount++;
+    printf("User directory '%s' created.\n", username);
+}
+
+void createFile(char* username, char* filename) {
+    for (int i = 0; i < userCount; i++) {
+        if (strcmp(directories[i].username, username) == 0) {
+            strcpy(directories[i].files[directories[i].fileCount].name, filename);
+            directories[i].fileCount++;
+            printf("File '%s' added to '%s'.\n", filename, username);
+            return;
+        }
+    }
+    printf("User '%s' not found.\n", username);
+}
+
+void display() {
+    for (int i = 0; i < userCount; i++) {
+        printf("User: %s\n", directories[i].username);
+        for (int j = 0; j < directories[i].fileCount; j++) {
+            printf("  - %s\n", directories[i].files[j].name);
+        }
+    }
+}
+
+int main() {
+    createUser("Alice");
+    createFile("Alice", "file1.txt");
+    createFile("Alice", "file2.txt");
+    createUser("Bob");
+    createFile("Bob", "file3.txt");
+    display();
+    return 0;
+}
