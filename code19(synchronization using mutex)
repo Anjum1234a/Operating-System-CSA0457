@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+int counter = 0;
+pthread_mutex_t mutex;
+void* increment_counter(void* arg) {
+    int thread_id = *(int*)arg;
+    for (int i = 0; i < 5; i++) {
+        pthread_mutex_lock(&mutex); 
+        printf("Thread %d: Counter before increment = %d\n", thread_id, counter);
+        counter++;
+        printf("Thread %d: Counter after increment = %d\n", thread_id, counter);
+        pthread_mutex_unlock(&mutex); 
+        sleep(1); 
+    }
+    return NULL;
+}
+int main() {
+    pthread_t thread1, thread2;
+    int thread_id1 = 1, thread_id2 = 2;
+    pthread_mutex_init(&mutex, NULL);
+    pthread_create(&thread1, NULL, increment_counter, &thread_id1);
+    pthread_create(&thread2, NULL, increment_counter, &thread_id2);
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    pthread_mutex_destroy(&mutex);
+    printf("Final Counter Value: %d\n", counter);
+    return 0;
+}
