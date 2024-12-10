@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+pthread_mutex_t mutex;
+pthread_cond_t cond;
+int counter = 0;
+int ready = 0;
+void *basic_thread(void *msg) {
+    printf("%s\n", (char *)msg);
+    return NULL;
+}
+void *mutex_thread(void *arg) {
+    pthread_mutex_lock(&mutex);
+    counter++;
+    printf("Counter: %d\n", counter);
+    pthread_mutex_unlock(&mutex);
+    return NULL;
+}
+void *condition_variable_thread(void *arg) {
+    pthread_mutex_lock(&mutex);
+    while (!ready) {
+        pthread_cond_wait(&cond, &mutex);
+    }
+    printf("Condition variable thread received signal.\n");
+    pthread_mutex_unlock(&mutex);
+    return NULL;
+}
+void *send_signal_thread(void *arg) {
+    pthread_mutex_lock(&mutex);
+    ready = 1;  
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mutex);
+    return NULL;}
+void *detached_thread(void *msg) {
+    printf("%s\n", (char *)msg);
+    return NULL;}
+void *argument_thread(void *arg) {
+    int num = *(int *)arg;
+    printf("Number passed to thread: %d\n", num);
+    return NULL;}
+int main() {
+    pthread_t threads[6];
+    int num = 5;
+    char *message = "Hello from the thread!";
+    pthread_create(&threads[0], NULL, basic_thread, (void *)message);
+    pthread_create(&threads[1], NULL, mutex_thread, NULL);
+    pthread_create(&threads[2], NULL, mutex_thread, NULL);
+    pthread_create(&threads[3], NULL, condition_variable_thread, NULL);
+    pthread_create(&threads[4], NULL, send_signal_thread, NULL);
+  pthread_create(&threads[5], NULL, detached_thread, (void *)"This is a detached thread!");
+pthread_detach(threads[5]); 
+pthread_create(&threads[6], NULL, argument_thread, (void *)&num);
+    pthread_join(threads[0], NULL);
+    pthread_join(threads[1], NULL);
+    pthread_join(threads[2], NULL);
+    pthread_join(threads[3], NULL);
+    pthread_join(threads[4], NULL);
+    pthread_join(threads[6], NULL);
+printf("Main thread finishes execution.\n");
+return 0;
+}
